@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pose Flash · Game Page Directions</title>
+  <!--
+    假设：
+    - 这是单人竖屏挑战页，摄像头画面是第一视觉。
+    - 玩家在运动中操作，按钮少、字号大、状态一眼能看懂。
+    - 目标动作和倒计时必须同时可见，失败后只保留一条惩罚文案和一个继续按钮。
+    - 三个方向共享真实业务状态，只探索布局、色彩和操作节奏。
+  -->
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-synthesis: none;
+      background: #e9edeb;
+      color: #162421;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 1180px;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(255,255,255,.8), transparent 26rem),
+        #e9edeb;
+    }
+    button { font: inherit; cursor: pointer; }
+    .board {
+      padding: 48px 52px 64px;
+    }
+    .board-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      max-width: 1320px;
+      margin: 0 auto 34px;
+    }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #0b8074;
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    h1, h2, p { margin: 0; }
+    h1 {
+      font-size: 35px;
+      letter-spacing: -.04em;
+      line-height: 1.1;
+    }
+    .board-note {
+      max-width: 300px;
+      color: #60706c;
+      font-size: 13px;
+      line-height: 1.6;
+      text-align: right;
+    }
+    .directions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(320px, 390px));
+      justify-content: center;
+      gap: 34px;
+    }
+    .direction {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .direction-meta {
+      min-height: 100px;
+      padding: 0 4px;
+    }
+    .direction-meta h2 {
+      font-size: 19px;
+      letter-spacing: -.02em;
+    }
+    .direction-meta p {
+      margin-top: 7px;
+      color: #687874;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .direction-tag {
+      display: inline-flex;
+      margin-top: 13px;
+      padding: 5px 8px;
+      border: 1px solid #bfcbc7;
+      color: #55706a;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+    .phone {
+      position: relative;
+      width: 390px;
+      height: 844px;
+      overflow: hidden;
+      border: 9px solid #192622;
+      border-radius: 31px;
+      box-shadow: 0 24px 46px rgba(27, 49, 43, .22);
+      isolation: isolate;
+    }
+    .phone button { border: 0; }
+    .stage {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .camera {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, rgba(23,44,39,.36), transparent 45%),
+        linear-gradient(0deg, rgba(9,26,23,.62), transparent 46%),
+        radial-gradient(circle at 67% 25%, #8caaa1 0 7%, transparent 7.2%),
+        linear-gradient(125deg, #7e9f96 0 36%, #c7d8cf 36% 43%, #5f847b 43% 78%, #9db4ac 78%);
+      filter: saturate(.82);
+    }
+    .camera::before {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 42px 42px;
+      content: "";
+      opacity: .4;
+    }
+    .camera::after {
+      position: absolute;
+      inset: 42% 16% 25%;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 46% 46% 18% 18%;
+      content: "";
+      opacity: .8;
+    }
+    .person {
+      position: absolute;
+      left: 50%;
+      top: 42%;
+      width: 5px;
+      height: 190px;
+      transform: translateX(-50%);
+      border-radius: 99px;
+      background: rgba(247,255,251,.84);
+      box-shadow: 0 0 22px rgba(239,255,249,.3);
+    }
+    .person::before {
+      position: absolute;
+      left: 50%;
+      top: -32px;
+      width: 35px;
+      height: 35px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: rgba(247,255,251,.84);
+      content: "";
+    }
+    .limb {
+      position: absolute;
+      width: 4px;
+      border-radius: 99px;
+      background: rgba(247,255,251,.84);
+      transform-origin: top center;
+    }
+    .left-arm { left: -47px; top: 6px; height: 82px; transform: rotate(29deg); }
+    .right-arm { right: -47px; top: 6px; height: 82px; transform: rotate(-29deg); }
+    .left-leg { left: -31px; top: 182px; height: 108px; transform: rotate(24deg); }
+    .right-leg { right: -31px; top: 182px; height: 108px; transform: rotate(-24deg); }
+    .topbar {
+      position: absolute;
+      z-index: 2;
+      top: 17px;
+      left: 17px;
+      right: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+    }
+    .topbar button, .icon-button {
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 50%;
+      background: rgba(12,30,26,.48);
+      color: #fff;
+      font-size: 17px;
+    }
+    .round {
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: .07em;
+    }
+    .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .12em;
+    }
+    .live::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ff795f;
+      box-shadow: 0 0 0 4px rgba(255,121,95,.2);
+      content: "";
+    }
+    .target-label {
+      position: absolute;
+      z-index: 2;
+      top: 91px;
+      left: 22px;
+      color: #fff;
+      text-shadow: 0 2px 14px rgba(0,0,0,.35);
+    }
+    .target-label small {
+      display: block;
+      margin-bottom: 8px;
+      color: rgba(255,255,255,.7);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .14em;
+    }
+    .target-label strong {
+      display: block;
+      font-size: 30px;
+      letter-spacing: -.07em;
+    }
+    .timer {
+      position: absolute;
+      z-index: 2;
+      top: 79px;
+      right: 20px;
+      color: #fff;
+      font-size: 42px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 900;
+      letter-spacing: -.08em;
+      text-shadow: 0 2px 16px rgba(0,0,0,.35);
+    }
+    .target-sheet {
+      position: absolute;
+      z-index: 3;
+      right: 16px;
+      bottom: 17px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      min-height: 116px;
+      padding: 15px 17px;
+      border: 1px solid rgba(255,255,255,.24);
+      border-radius: 18px;
+      background: rgba(11,29,25,.8);
+      color: #fff;
+      backdrop-filter: blur(13px);
+    }
+    .mini-figure {
+      position: relative;
+      width: 52px;
+      height: 76px;
+      flex: 0 0 52px;
+    }
+    .mini-figure::before {
+      position: absolute;
+      top: 4px;
+      left: 50%;
+      width: 17px;
+      height: 17px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: #d9f2e7;
+      content: "";
+    }
+    .mini-figure::after {
+      position: absolute;
+      top: 25px;
+      left: 50%;
+      width: 3px;
+      height: 45px;
+      transform: translateX(-50%);
+      background: #d9f2e7;
+      box-shadow: -16px 3px 0 -1px #d9f2e7, 16px 3px 0 -1px #d9f2e7;
+      content: "";
+    }
+    .sheet-copy { min-width: 0; flex: 1; }
+    .sheet-copy small {
+      display: block;
+      margin-bottom: 6px;
+      color: #a8c5bb;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .sheet-copy strong {
+      display: block;
+      overflow: hidden;
+      font-size: 20px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .hold-meter {
+      position: absolute;
+      right: 17px;
+      bottom: 13px;
+      left: 17px;
+      height: 4px;
+      overflow: hidden;
+      border-radius: 4px;
+      background: rgba(255,255,255,.16);
+    }
+    .hold-meter i {
+      display: block;
+      width: 43%;
+      height: 100%;
+      border-radius: inherit;
+      background: #ff795f;
+    }
+    .fail-trigger {
+      display: block;
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px dashed #aebdb8;
+      border-radius: 10px;
+      background: transparent;
+      color: #61746d;
+      font-size: 12px;
+      text-align: left;
+    }
+    .fail-trigger:hover { border-color: #0b8074; color: #0b8074; }
+    .penalty {
+      position: absolute;
+      z-index: 8;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 26px;
+      background: rgba(15,32,28,.92);
+      color: #fff;
+      text-align: center;
+      backdrop-filter: blur(13px);
+    }
+    .penalty.is-on { display: flex; }
+    .penalty-inner { width: 100%; }
+    .penalty-mark {
+      display: grid;
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 23px;
+      place-items: center;
+      border-radius: 50%;
+      background: #ff795f;
+      color: #1b2926;
+      font-size: 27px;
+      font-weight: 900;
+    }
+    .penalty h3 {
+      font-size: 28px;
+      letter-spacing: -.06em;
+    }
+    .penalty p {
+      margin: 15px auto 31px;
+      max-width: 240px;
+      color: #d9f2e7;
+      font-size: 18px;
+      line-height: 1.65;
+    }
+    .penalty button {
+      width: 100%;
+      min-height: 52px;
+      border-radius: 10px;
+      background: #d9f2e7;
+      color: #17322c;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    /* 01: referee console */
+    .referee { background: #10221e; }
+    .referee .camera { filter: saturate(.68) contrast(1.03); }
+    .referee .target-sheet { border-radius: 12px; }
+    .referee .timer { color: #ffdf70; }
+
+    /* 02: arcade scoreboard */
+    .arcade { background: #f6f3e9; border-color: #171c1a; }
+    .arcade .camera {
+      inset: 12px 12px 163px;
+      border-radius: 20px;
+      background:
+        linear-gradient(0deg, rgba(21,34,30,.72), transparent 58%),
+        linear-gradient(120deg, #c3cec5 0 34%, #8aa296 34% 63%, #d8ded7 63%);
+    }
+    .arcade .camera::before { border-radius: inherit; }
+    .arcade .topbar { top: 25px; left: 27px; right: 27px; }
+    .arcade .topbar button { background: #f6f3e9; border-color: #d8dfd8; color: #17221e; }
+    .arcade .round { color: #17221e; }
+    .arcade .live { color: #17221e; }
+    .arcade .live::before { background: #ff795f; }
+    .arcade .target-label { top: 80px; left: 28px; }
+    .arcade .timer { top: 68px; right: 30px; color: #f6f3e9; }
+    .arcade .target-sheet {
+      right: 12px;
+      bottom: 12px;
+      left: 12px;
+      min-height: 130px;
+      border: 0;
+      border-radius: 20px;
+      background: #17221e;
+    }
+    .arcade .hold-meter { bottom: 16px; }
+    .arcade .hold-meter i { width: 63%; background: #ffdf70; }
+    .arcade .mini-figure::before, .arcade .mini-figure::after { background: #ffdf70; box-shadow: -16px 3px 0 -1px #ffdf70, 16px 3px 0 -1px #ffdf70; }
+    .arcade .penalty { background: #ffdf70; color: #17221e; }
+    .arcade .penalty-mark { background: #17221e; color: #ffdf70; }
+    .arcade .penalty p { color: #38564e; }
+    .arcade .penalty button { background: #17221e; color: #ffdf70; }
+
+    /* 03: movement poster */
+    .poster { background: #f4f1e8; border-color: #20332e; }
+    .poster .camera {
+      inset: 0 0 0 0;
+      background:
+        linear-gradient(180deg, rgba(22,49,43,.12), rgba(22,49,43,.68)),
+        linear-gradient(135deg, #b7c5b9 0 42%, #e1dfd1 42% 57%, #91aa9d 57%);
+      filter: saturate(.72);
+    }
+    .poster .topbar { color: #20332e; }
+    .poster .topbar button { background: #f4f1e8; border-color: rgba(32,51,46,.2); color: #20332e; }
+    .poster .round { color: #20332e; }
+    .poster .live { color: #20332e; }
+    .poster .target-label { top: 104px; left: 28px; }
+    .poster .target-label small { color: rgba(255,255,255,.78); }
+    .poster .target-label strong { font-size: 37px; }
+    .poster .timer { top: 101px; right: 28px; font-size: 52px; }
+    .poster .target-sheet {
+      right: 0;
+      bottom: 0;
+      left: 0;
+      min-height: 185px;
+      padding: 23px 28px 31px;
+      border: 0;
+      border-radius: 30px 30px 0 0;
+      background: #f4f1e8;
+      color: #20332e;
+    }
+    .poster .sheet-copy small { color: #0b8074; }
+    .poster .hold-meter { right: 28px; bottom: 18px; left: 28px; background: #cbd8d0; }
+    .poster .hold-meter i { width: 29%; background: #ff795f; }
+    .poster .mini-figure::before, .poster .mini-figure::after { background: #0b8074; box-shadow: -16px 3px 0 -1px #0b8074, 16px 3px 0 -1px #0b8074; }
+    .poster .penalty { background: #f4f1e8; color: #20332e; }
+    .poster .penalty-mark { background: #ff795f; color: #20332e; }
+    .poster .penalty p { color: #55716b; }
+    .poster .penalty button { background: #0b8074; color: #f4f1e8; }
+  </style>
+</head>
+<body>
+  <main class="board">
+    <header class="board-head">
+      <div>
+        <p class="eyebrow">Pose Flash / Game Page</p>
+        <h1>三种更简单的挑战中场</h1>
+      </div>
+      <p class="board-note">点击任意页面下方的「模拟失败」，查看惩罚状态。每个方向都只保留一个继续动作。</p>
+    </header>
+
+    <section class="directions">
+      <article class="direction">
+        <div class="direction-meta">
+          <h2>01 · 裁判台</h2>
+          <p>摄像头全屏，目标姿势和倒计时悬浮在画面上。适合快速连续挑战，信息最少。</p>
+          <span class="direction-tag">信息最克制 · 强聚焦</span>
+        </div>
+        <div class="phone referee" data-direction>
+          <div class="stage">
+            <div class="camera"><div class="person"><i class="limb left-arm"></i><i class="limb right-arm"></i><i class="limb left-leg"></i><i class="limb right-leg"></i></div></div>
+            <div class="topbar"><button aria-label="退出">×</button><span class="round">03 / 10 轮</span><span class="live">LIVE</span><button aria-label="暂停">Ⅱ</button></div>
+            <div class="target-label"><small>摆出这个姿势</small><strong>双手举高</strong></div>
+            <div class="timer">4.2</div>
+            <div class="target-sheet"><div class="mini-figure"></div><div class="sheet-copy"><small>保持动作</small><strong>还有 0.8 秒</strong></div><div class="hold-meter"><i></i></div></div>
+          </div>
+          <div class="penalty"><div class="penalty-inner"><div class="penalty-mark">!</div><h3>接受小惩罚</h3><p>用播音腔介绍一下自己</p><button data-reset>完成，继续挑战</button></div></div>
+        </div>
+        <button class="fail-trigger" data-fail>点击预览失败状态 →</button>
+      </article>
+
+      <article class="direction">
+        <div class="direction-meta">
+          <h2>02 · 游戏机计分牌</h2>
+          <p>把回合、时间和目标做成醒目的竞技计分牌。按钮和结果都更像一场轻量小游戏。</p>
+          <span class="direction-tag">反馈最强 · 适合聚会</span>
+        </div>
+        <div class="phone arcade" data-direction>
+          <div class="stage">
+            <div class="camera"><div class="person"><i class="limb left-arm"></i><i class="limb right-arm"></i><i class="limb left-leg"></i><i class="limb right-leg"></i></div></div>
+            <div class="topbar"><button aria-label="退出">×</button><span class="round">ROUND 03</span><span class="live">LIVE</span><button aria-label="暂停">Ⅱ</button></div>
+            <div class="target-label"><small>NEXT MOVE</small><strong>双手举高</strong></div>
+            <div class="timer">04.2</div>
+            <div class="target-sheet"><div class="mini-figure"></div><div class="sheet-copy"><small>动作进度</small><strong>再保持一下</strong></div><div class="hold-meter"><i></i></div></div>
+          </div>
+          <div class="penalty"><div class="penalty-inner"><div class="penalty-mark">!</div><h3>这一轮失误</h3><p>模仿机器人说一句话</p><button data-reset>完成，继续挑战</button></div></div>
+        </div>
+        <button class="fail-trigger" data-fail>点击预览失败状态 →</button>
+      </article>
+
+      <article class="direction">
+        <div class="direction-meta">
+          <h2>03 · 运动海报</h2>
+          <p>用一张大目标和一块底部操作板建立节奏。画面更有品牌感，适合拍照分享。</p>
+          <span class="direction-tag">视觉最强 · 操作最少</span>
+        </div>
+        <div class="phone poster" data-direction>
+          <div class="stage">
+            <div class="camera"><div class="person"><i class="limb left-arm"></i><i class="limb right-arm"></i><i class="limb left-leg"></i><i class="limb right-leg"></i></div></div>
+            <div class="topbar"><button aria-label="退出">×</button><span class="round">03 / 10 轮</span><span class="live">LIVE</span><button aria-label="暂停">Ⅱ</button></div>
+            <div class="target-label"><small>目标动作</small><strong>双手举高</strong></div>
+            <div class="timer">4.2</div>
+            <div class="target-sheet"><div class="mini-figure"></div><div class="sheet-copy"><small>动作达成前</small><strong>保持住，不要动</strong></div><div class="hold-meter"><i></i></div></div>
+          </div>
+          <div class="penalty"><div class="penalty-inner"><div class="penalty-mark">!</div><h3>换你接受惩罚</h3><p>说出自己三个优点</p><button data-reset>完成，继续挑战</button></div></div>
+        </div>
+        <button class="fail-trigger" data-fail>点击预览失败状态 →</button>
+      </article>
+    </section>
+  </main>
+  <script>
+    document.querySelectorAll('[data-direction]').forEach((phone) => {
+      const penalty = phone.querySelector('.penalty');
+      phone.parentElement.querySelector('[data-fail]').addEventListener('click', () => {
+        penalty.classList.add('is-on');
+      });
+      penalty.querySelector('[data-reset]').addEventListener('click', () => {
+        penalty.classList.remove('is-on');
+      });
+    });
+  </script>
+</body>
+</html>

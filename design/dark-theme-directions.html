@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pose Flash · 暗黑调教风格方向板</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #0b0b0d;
+      color: #f3f1ef;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 1180px; background: #0b0b0d; }
+    button { font: inherit; cursor: pointer; }
+    .board { padding: 46px 50px 70px; }
+    .board-head { max-width: 1320px; margin: 0 auto 34px; display: flex; align-items: end; justify-content: space-between; }
+    .eyebrow { margin: 0 0 9px; color: #d43b50; font-size: 12px; font-weight: 850; letter-spacing: .18em; text-transform: uppercase; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: 36px; line-height: 1.08; letter-spacing: -.05em; }
+    .board-note { max-width: 360px; color: #9c9698; font-size: 13px; line-height: 1.65; text-align: right; }
+    .directions { display: grid; grid-template-columns: repeat(3, minmax(320px, 390px)); justify-content: center; gap: 34px; }
+    .direction { display: flex; flex-direction: column; gap: 15px; }
+    .direction-meta { min-height: 126px; padding: 0 4px; }
+    .direction-meta h2 { font-size: 20px; letter-spacing: -.03em; }
+    .direction-meta p { margin-top: 8px; color: #aaa4a6; font-size: 13px; line-height: 1.6; }
+    .direction-tag { display: inline-flex; margin-top: 13px; padding: 5px 8px; border: 1px solid #403c40; color: #d9d2d3; font-size: 11px; font-weight: 800; letter-spacing: .06em; }
+    .phone { position: relative; width: 390px; height: 844px; overflow: hidden; border: 8px solid #28272a; border-radius: 30px; background: #121214; box-shadow: 0 25px 52px rgba(0,0,0,.45); isolation: isolate; }
+    .screen { position: absolute; inset: 0; overflow: hidden; }
+    .phone button { border: 0; }
+    .topline { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 0; color: #d7d3d3; }
+    .brand { font-size: 11px; font-weight: 850; letter-spacing: .18em; }
+    .status { font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+    .status::before { display: inline-block; width: 6px; height: 6px; margin-right: 7px; border-radius: 50%; background: currentColor; content: ""; vertical-align: 1px; }
+    .hero { padding: 44px 22px 0; }
+    .hero-kicker { color: var(--accent); font-size: 11px; font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
+    .hero h3 { margin: 10px 0 0; font-size: 34px; line-height: 1.04; letter-spacing: -.07em; }
+    .hero-copy { max-width: 250px; margin-top: 14px; color: #aaa4a6; font-size: 13px; line-height: 1.6; }
+    .pose-zone { position: relative; height: 230px; margin: 30px 22px 0; overflow: hidden; background: var(--zone); border: 1px solid var(--line); }
+    .pose-zone::before { position: absolute; inset: 0; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 32px 32px; content: ""; opacity: .5; }
+    .pose { position: absolute; left: 50%; top: 48px; width: 5px; height: 123px; transform: translateX(-50%); background: var(--pose); box-shadow: 0 0 24px var(--pose-glow); }
+    .pose::before { position: absolute; left: 50%; top: -25px; width: 28px; height: 28px; transform: translateX(-50%); border-radius: 50%; background: var(--pose); content: ""; }
+    .pose::after { position: absolute; left: -39px; top: 10px; width: 84px; height: 4px; background: var(--pose); box-shadow: -12px 87px 0 -1px var(--pose), 44px 87px 0 -1px var(--pose); content: ""; transform: rotate(-12deg); }
+    .zone-note { position: absolute; left: 15px; bottom: 12px; color: #beb7b8; font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+    .meter { margin: 21px 22px 0; }
+    .meter-row { display: flex; justify-content: space-between; color: #b4aeb0; font-size: 11px; font-weight: 800; }
+    .meter-row strong { color: var(--accent); }
+    .meter-track { height: 7px; margin-top: 9px; overflow: hidden; background: #29272a; }
+    .meter-track i { display: block; width: 54%; height: 100%; background: var(--accent); }
+    .controls { position: absolute; right: 0; bottom: 0; left: 0; padding: 18px 22px 24px; border-top: 1px solid var(--line); background: var(--panel); }
+    .control-caption { color: #968f91; font-size: 10px; font-weight: 850; letter-spacing: .14em; text-transform: uppercase; }
+    .control-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .primary { flex: 1; min-height: 51px; background: var(--accent); color: var(--button-text); font-size: 15px; font-weight: 900; }
+    .secondary { width: 51px; height: 51px; border: 1px solid var(--line) !important; background: transparent; color: #e7e1e1; font-size: 17px; }
+    .challenge { display: none; position: absolute; inset: 0; background: var(--challenge-bg); }
+    .challenge.is-on { display: block; }
+    .challenge-top { display: flex; align-items: center; justify-content: space-between; padding: 18px 18px 0; }
+    .round { color: #d8d1d2; font-size: 12px; font-weight: 850; letter-spacing: .12em; }
+    .timer { color: var(--accent); font-size: 45px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.08em; }
+    .challenge-target { padding: 38px 20px 0; }
+    .challenge-target small { color: #a69fa1; font-size: 10px; font-weight: 850; letter-spacing: .16em; }
+    .challenge-target h3 { margin-top: 9px; font-size: 35px; letter-spacing: -.07em; }
+    .target-figure { position: relative; height: 310px; margin: 26px 20px 0; border: 1px solid var(--line); background: var(--zone); }
+    .target-figure .pose { top: 87px; height: 150px; }
+    .hold { position: absolute; right: 20px; bottom: 22px; left: 20px; }
+    .hold-label { display: flex; justify-content: space-between; color: #b9b1b3; font-size: 11px; }
+    .hold-track { height: 8px; margin-top: 9px; background: #2a272a; }
+    .hold-track i { display: block; width: 41%; height: 100%; background: var(--accent); }
+    .challenge-bottom { position: absolute; right: 20px; bottom: 22px; left: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .exit { background: transparent; color: #aaa4a6; font-size: 12px; }
+    .fail { background: transparent; color: var(--accent); font-size: 12px; font-weight: 850; }
+    .penalty { display: none; position: absolute; inset: 0; z-index: 5; align-items: center; justify-content: center; padding: 26px; background: rgba(11,10,12,.96); text-align: center; }
+    .penalty.is-on { display: flex; }
+    .penalty-mark { display: grid; width: 57px; height: 57px; margin: 0 auto 22px; place-items: center; border: 1px solid var(--accent); border-radius: 50%; color: var(--accent); font-size: 25px; font-weight: 900; }
+    .penalty h3 { font-size: 27px; letter-spacing: -.06em; }
+    .penalty p { margin: 14px auto 28px; max-width: 245px; color: #c6bfc0; font-size: 17px; line-height: 1.6; }
+    .penalty button { width: 100%; min-height: 51px; background: var(--accent); color: var(--button-text); font-size: 15px; font-weight: 900; }
+    .footer-note { display: block; width: 100%; padding: 10px 14px; border: 1px dashed #474247; background: transparent; color: #8e888a; font-size: 12px; text-align: left; }
+    .footer-note:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* 01 黑红服从协议 */
+    .red { --accent: #d63b52; --button-text: #190d10; --zone: #191015; --panel: #110d10; --challenge-bg: #0d0b0e; --line: #3b2329; --grid: rgba(214,59,82,.13); --pose: #f3e9e8; --pose-glow: rgba(214,59,82,.35); }
+    .red .hero h3 { max-width: 240px; }
+    .red .hero-copy { border-left: 2px solid var(--accent); padding-left: 11px; }
+
+    /* 02 黑银审讯台 */
+    .steel { --accent: #e0a94e; --button-text: #181716; --zone: #1a1d20; --panel: #111416; --challenge-bg: #0e1012; --line: #394047; --grid: rgba(200,208,212,.11); --pose: #d9e0e2; --pose-glow: rgba(224,169,78,.26); }
+    .steel .phone { border-color: #454a4f; }
+    .steel .hero h3 { font-size: 31px; letter-spacing: -.04em; }
+    .steel .pose-zone, .steel .target-figure { border-style: dashed; }
+
+    /* 03 黑紫仪式室 */
+    .violet { --accent: #a58bff; --button-text: #110e19; --zone: #171321; --panel: #100d17; --challenge-bg: #0c0a11; --line: #392f51; --grid: rgba(165,139,255,.14); --pose: #efeaff; --pose-glow: rgba(165,139,255,.42); }
+    .violet .hero h3 { font-size: 35px; }
+    .violet .pose-zone, .violet .target-figure { border-radius: 18px; }
+
+    @media (max-width: 1240px) {
+      body { min-width: 0; }
+      .board { padding-inline: 24px; }
+      .directions { grid-template-columns: 1fr; justify-items: center; }
+      .board-head { display: block; }
+      .board-note { margin-top: 14px; text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <main class="board">
+    <header class="board-head">
+      <div>
+        <p class="eyebrow">Pose Flash / Dark Direction Board</p>
+        <h1>暗黑调教风格，三种落地方式</h1>
+      </div>
+      <p class="board-note">保留摄像头优先、回合制挑战和 EMS 失败反馈，只更换色彩、排版和控制感。点击「开始挑战」查看训练页，再点「模拟失败」查看惩罚状态。</p>
+    </header>
+
+    <section class="directions">
+      <article class="direction">
+        <div class="direction-meta">
+          <h2>01 · 黑红服从协议</h2>
+          <p>黑底配深红警示色，像一套明确的训练规章。强调指令、回合和执行结果，压迫感最强。</p>
+          <span class="direction-tag">权威 · 克制 · 反馈直接</span>
+        </div>
+        <div class="phone red" data-direction>
+          <div class="screen">
+            <div class="topline"><span class="brand">POSE FLASH</span><span class="status" style="color:#d63b52">READY</span></div>
+            <div class="home">
+              <div class="hero"><p class="hero-kicker">今日训练协议</p><h3>站好，准备开始。</h3><p class="hero-copy">每一轮只给一个动作。完成指令，进入下一轮。</p></div>
+              <div class="pose-zone"><div class="pose"></div><span class="zone-note">TARGET / REACH</span></div>
+              <div class="meter"><div class="meter-row"><span>当前方案</span><strong>10 轮 · 5 秒</strong></div><div class="meter-track"><i></i></div></div>
+              <div class="controls"><span class="control-caption">执行入口</span><div class="control-row"><button class="primary" data-start>开始挑战</button><button class="secondary" aria-label="设备连接">⌁</button></div></div>
+            </div>
+            <div class="challenge"><div class="challenge-top"><button class="exit" data-home>退出</button><span class="round">03 / 10 轮</span><span class="timer">04.2</span></div><div class="challenge-target"><small>目标动作</small><h3>双手举高</h3></div><div class="target-figure"><div class="pose"></div><div class="hold"><div class="hold-label"><span>保持指令</span><strong>41%</strong></div><div class="hold-track"><i></i></div></div></div><div class="challenge-bottom"><button class="exit" data-home>结束本局</button><button class="fail" data-fail>模拟失败</button></div></div>
+            <div class="penalty"><div><div class="penalty-mark">!</div><h3>执行失败</h3><p>接受本轮惩罚后，继续下一条指令。</p><button data-reset>完成，继续挑战</button></div></div>
+          </div>
+        </div>
+        <button class="footer-note" data-fail-preview>预览失败状态 →</button>
+      </article>
+
+      <article class="direction">
+        <div class="direction-meta">
+          <h2>02 · 黑银审讯台</h2>
+          <p>枪灰、银白和一点琥珀色，偏器械训练室。更冷，更像一台精密控制设备。</p>
+          <span class="direction-tag">器械 · 冷峻 · 专注训练</span>
+        </div>
+        <div class="phone steel" data-direction>
+          <div class="screen">
+            <div class="topline"><span class="brand">P/F CONTROL</span><span class="status" style="color:#e0a94e">LINKED</span></div>
+            <div class="home">
+              <div class="hero"><p class="hero-kicker">CONTROL ROOM 02</p><h3>设定你的训练参数。</h3><p class="hero-copy">动作、时间、强度都在开始前锁定。</p></div>
+              <div class="pose-zone"><div class="pose"></div><span class="zone-note">CALIBRATION / STANCE</span></div>
+              <div class="meter"><div class="meter-row"><span>EMS 设备</span><strong>YYC-DJ-V2</strong></div><div class="meter-track"><i style="width:72%"></i></div></div>
+              <div class="controls"><span class="control-caption">系统就绪</span><div class="control-row"><button class="primary" data-start>开始挑战</button><button class="secondary" aria-label="设备设置">⚙</button></div></div>
+            </div>
+            <div class="challenge"><div class="challenge-top"><button class="exit" data-home>退出</button><span class="round">ROUND 03</span><span class="timer">04.2</span></div><div class="challenge-target"><small>NEXT MOVE</small><h3>双手举高</h3></div><div class="target-figure"><div class="pose"></div><div class="hold"><div class="hold-label"><span>动作匹配度</span><strong>41%</strong></div><div class="hold-track"><i></i></div></div></div><div class="challenge-bottom"><button class="exit" data-home>结束本局</button><button class="fail" data-fail>模拟失败</button></div></div>
+            <div class="penalty"><div><div class="penalty-mark">!</div><h3>信号已触发</h3><p>本轮未完成。处理反馈后，系统会继续计时。</p><button data-reset>完成，继续挑战</button></div></div>
+          </div>
+        </div>
+        <button class="footer-note" data-fail-preview>预览失败状态 →</button>
+      </article>
+
+      <article class="direction">
+        <div class="direction-meta">
+          <h2>03 · 黑紫仪式室</h2>
+          <p>黑底和低饱和紫色营造更神秘的仪式感，适合把挑战做成一套沉浸式流程。</p>
+          <span class="direction-tag">神秘 · 沉浸 · 仪式感</span>
+        </div>
+        <div class="phone violet" data-direction>
+          <div class="screen">
+            <div class="topline"><span class="brand">POSE / RITUAL</span><span class="status" style="color:#a58bff">ATTUNED</span></div>
+            <div class="home">
+              <div class="hero"><p class="hero-kicker">准备仪式</p><h3>把注意力交给这一轮。</h3><p class="hero-copy">安静入镜，按指令完成动作。每次保持都会更接近完成。</p></div>
+              <div class="pose-zone"><div class="pose"></div><span class="zone-note">RITUAL / REACH</span></div>
+              <div class="meter"><div class="meter-row"><span>当前进度</span><strong>03 / 10</strong></div><div class="meter-track"><i style="width:32%"></i></div></div>
+              <div class="controls"><span class="control-caption">进入训练</span><div class="control-row"><button class="primary" data-start>开始挑战</button><button class="secondary" aria-label="连接设备">✦</button></div></div>
+            </div>
+            <div class="challenge"><div class="challenge-top"><button class="exit" data-home>退出</button><span class="round">03 / 10 轮</span><span class="timer">04.2</span></div><div class="challenge-target"><small>本轮指令</small><h3>双手举高</h3></div><div class="target-figure"><div class="pose"></div><div class="hold"><div class="hold-label"><span>保持这一刻</span><strong>41%</strong></div><div class="hold-track"><i></i></div></div></div><div class="challenge-bottom"><button class="exit" data-home>结束本局</button><button class="fail" data-fail>模拟失败</button></div></div>
+            <div class="penalty"><div><div class="penalty-mark">!</div><h3>仪式中断</h3><p>完成反馈，再回到这一轮的节奏里。</p><button data-reset>完成，继续挑战</button></div></div>
+          </div>
+        </div>
+        <button class="footer-note" data-fail-preview>预览失败状态 →</button>
+      </article>
+    </section>
+  </main>
+  <script>
+    document.querySelectorAll('[data-direction]').forEach((phone) => {
+      const home = phone.querySelector('.home');
+      const challenge = phone.querySelector('.challenge');
+      const penalty = phone.querySelector('.penalty');
+      phone.querySelectorAll('[data-start]').forEach((button) => button.addEventListener('click', () => {
+        home.style.display = 'none';
+        challenge.classList.add('is-on');
+      }));
+      phone.querySelectorAll('[data-home]').forEach((button) => button.addEventListener('click', () => {
+        challenge.classList.remove('is-on');
+        home.style.display = 'block';
+        penalty.classList.remove('is-on');
+      }));
+      phone.querySelectorAll('[data-fail]').forEach((button) => button.addEventListener('click', () => penalty.classList.add('is-on')));
+      phone.querySelector('[data-reset]').addEventListener('click', () => penalty.classList.remove('is-on'));
+      phone.parentElement.querySelector('[data-fail-preview]').addEventListener('click', () => {
+        home.style.display = 'none';
+        challenge.classList.add('is-on');
+        penalty.classList.add('is-on');
+      });
+    });
+  </script>
+</body>
+</html>
